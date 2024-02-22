@@ -18,7 +18,12 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         private IBackgroundJobManager _backgroundJobManager;
         private IOptions<AbpPostmarkOptions> _abpPostmarkConfiguration;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public PostmarkTests()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             _emailSender = GetRequiredService<IEmailSender>();
         }
@@ -98,43 +103,48 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         }
 
         [Fact]
-        public async Task SendAsync_WithBackupEnabled_UsesBackupSender()
+        public Task SendAsync_WithBackupEnabled_UsesBackupSender()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         [Fact]
-        public async Task SendTemplatedEmailAsync_WithValidTemplate_SendsEmail()
+        public Task SendTemplatedEmailAsync_WithValidTemplate_SendsEmail()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         [Fact]
-        public async Task SendTemplatedEmailAsync_WithInvalidTemplate_ThrowsError()
+        public Task SendTemplatedEmailAsync_WithInvalidTemplate_ThrowsError()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         [Fact]
-        public async Task SendAsync_HandlesPostmarkExceptions()
+        public Task SendAsync_HandlesPostmarkExceptions()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         [Fact]
-        public async Task BuildClientAsync_ThrowsWhenApiKeyIsInvalid()
+        public Task BuildClientAsync_ThrowsWhenApiKeyIsInvalid()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         [Fact]
@@ -146,21 +156,23 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         }
 
         [Fact]
-        public async Task ConvertToPostmarkMessage_CreatesExpectedMessage()
+        public Task ConvertToPostmarkMessage_CreatesExpectedMessage()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
 
         // Optional: Integration Test (if applicable)
         // Remember to use this sparingly and with caution, as it involves real external service interaction.
         [Fact(Skip = "Integration test - runs selectively")]
-        public async Task SendAsync_IntegrationWithActualService()
+        public Task SendAsync_IntegrationWithActualService()
         {
             // Setup
             // Act
             // Assert
+            return Task.CompletedTask;
         }
     }
 }

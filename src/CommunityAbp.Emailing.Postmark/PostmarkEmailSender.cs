@@ -31,6 +31,7 @@ public interface IPostmarkSmtpEmailSender : IEmailSender
 /// <param name="smtpConfiguration"></param>
 /// <param name="backgroundJobManager"></param>
 /// <param name="abpPostmarkConfiguration"></param>
+/// <param name="client"></param>
 [Dependency(ServiceLifetime.Transient, ReplaceServices = true)]
 public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration, IBackgroundJobManager backgroundJobManager, IOptions<AbpPostmarkOptions> abpPostmarkConfiguration, IAbpPostmarkClient? client = null) : EmailSenderBase(smtpConfiguration, backgroundJobManager), IPostmarkSmtpEmailSender
 {
