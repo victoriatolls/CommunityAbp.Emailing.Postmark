@@ -23,8 +23,9 @@
 		<RootNamespace />
 		<Company>Clinical Support Systems</Company>
 		<Authors>kfrancis</Authors>
-		<Description>Postmark is a cross-platform, popular open source mail client library for .net. This abp module provides an integration package to use the Postmark as the email sender.
-</Description>
+		<Description>Postmark is a cross-platform, popular open source mail client library for .net. This abp module provides an integration package to use the Postmark as the email sender.</Description>
+		<PackageProjectUrl>https://github.com/Clinical-Support-Systems/CommunityAbp.Emailing.Postmark</PackageProjectUrl>
+		<PackageIcon>AbpPostmarkIcon.png</PackageIcon>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
@@ -66,6 +67,13 @@
 	  </PackageReference>
 	  <PackageReference Include="Postmark" Version="4.7.11" />
 	  <PackageReference Include="Volo.Abp.Emailing" Version="8.0.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="AbpPostmarkIcon.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 
 </Project>
