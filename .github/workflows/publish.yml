@@ -43,7 +43,7 @@ jobs:
         setAllVars: true
 
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=${{env.NBGV_SimpleVersion}}
+    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
