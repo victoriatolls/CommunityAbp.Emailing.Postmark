@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using PostmarkDotNet;
 using Shouldly;
+using Volo.Abp;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Emailing;
 using Volo.Abp.Emailing.Smtp;
+using Volo.Abp.Settings;
 
 namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
 {
@@ -14,15 +17,10 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         private ISmtpEmailSenderConfiguration _smtpConfiguration;
         private IBackgroundJobManager _backgroundJobManager;
         private IOptions<AbpPostmarkOptions> _abpPostmarkConfiguration;
-        private PostmarkEmailSender _postmarkEmailSender;
 
         public PostmarkTests()
         {
             _emailSender = GetRequiredService<IEmailSender>();
-            _smtpConfiguration = Substitute.For<ISmtpEmailSenderConfiguration>();
-            _backgroundJobManager = Substitute.For<IBackgroundJobManager>();
-            _abpPostmarkConfiguration = Substitute.For<IOptions<AbpPostmarkOptions>>();
-            _postmarkEmailSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
         }
 
         protected override void AfterAddApplication(IServiceCollection services)
@@ -30,7 +28,6 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
             _smtpConfiguration = Substitute.For<ISmtpEmailSenderConfiguration>();
             _backgroundJobManager = Substitute.For<IBackgroundJobManager>();
             _abpPostmarkConfiguration = Substitute.For<IOptions<AbpPostmarkOptions>>();
-            _postmarkEmailSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
         }
 
         [Fact]
@@ -45,17 +42,59 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         [Fact]
         public async Task ConfigurationThrowsWhenApiKeyInvalid()
         {
-            // Setup
+            // Arrange
+            var invalidApiKey = "invalid-api-key"; // Example of an invalid API key format
+            _abpPostmarkConfiguration.Value.Returns(new AbpPostmarkOptions
+            {
+                ApiKey = invalidApiKey, // Setting an invalid API key
+                UsePostmark = true // Assuming the intention is to use Postmark
+            });
+
+            var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
+
             // Act
+            var exception = await Should.ThrowAsync<AbpException>(postmarkSender.BuildClientAsync);
+
             // Assert
+            exception.Message.ShouldContain("Postmark API key is not set or not in the correct format");
         }
 
         [Fact]
         public async Task SendAsync_WithValidParameters_SendsEmail()
         {
-            // Setup
+            // Arrange
+            string validApiKey = "221d43f5-60c7-4426-96b9-c05508b1aaa0";
+            _abpPostmarkConfiguration.Value.Returns(new AbpPostmarkOptions
+            {
+                ApiKey = validApiKey,
+                UsePostmark = true
+            });
+            _smtpConfiguration.GetDefaultFromAddressAsync().Returns("test@test.com");
+
+            var email = "test@example.com";
+            var subject = "Test Subject";
+            var body = "Test Body";
+            var isBodyHtml = true;
+            PostmarkMessage? sentMessage = null;
+
+            var postmarkClientMock = Substitute.For<IAbpPostmarkClient>();
+            postmarkClientMock.When(x => x.SendMessageAsync(Arg.Any<PostmarkMessage>())).Do(x => {
+                sentMessage = x.Arg<PostmarkMessage>();
+            });
+
+            var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+
             // Act
+            await postmarkSender.SendAsync(email, subject, body, isBodyHtml);
+
             // Assert
+            sentMessage.ShouldNotBeNull();
+            sentMessage.ShouldSatisfyAllConditions(
+                x => x.To.ShouldBe(email),
+                x => x.Subject.ShouldBe(subject),
+                x => x.HtmlBody.ShouldBe(body),
+                x => x.TrackOpens.ShouldBe(true)
+            );
         }
 
         [Fact]

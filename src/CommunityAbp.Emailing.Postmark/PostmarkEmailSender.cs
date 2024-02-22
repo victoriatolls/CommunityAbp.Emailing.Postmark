@@ -32,7 +32,7 @@ public interface IPostmarkSmtpEmailSender : IEmailSender
 /// <param name="backgroundJobManager"></param>
 /// <param name="abpPostmarkConfiguration"></param>
 [Dependency(ServiceLifetime.Transient, ReplaceServices = true)]
-public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration, IBackgroundJobManager backgroundJobManager, IOptions<AbpPostmarkOptions> abpPostmarkConfiguration) : EmailSenderBase(smtpConfiguration, backgroundJobManager), IPostmarkSmtpEmailSender
+public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration, IBackgroundJobManager backgroundJobManager, IOptions<AbpPostmarkOptions> abpPostmarkConfiguration, IAbpPostmarkClient? client = null) : EmailSenderBase(smtpConfiguration, backgroundJobManager), IPostmarkSmtpEmailSender
 {
     /// <summary>
     /// You can also send to postmark using Smtp, so if the user has not configured Postmark, we can use the SmtpEmailSender as a backup
@@ -50,23 +50,25 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
     /// </summary>
     protected ISmtpEmailSenderConfiguration SmtpConfiguration { get; } = smtpConfiguration;
 
+    private IAbpPostmarkClient? _client = client;
+
     /// <summary>
     /// Construct a Postmark client
     /// </summary>
     /// <returns></returns>
     /// <exception cref="AbpException"></exception>
-    public async Task<PostmarkClient> BuildClientAsync()
+    public async Task<IAbpPostmarkClient> BuildClientAsync()
     {
         var apiKeyValue = AbpPostmarkOptions.ApiKey ?? await SmtpConfiguration.GetUserNameAsync();
         if (!Guid.TryParse(apiKeyValue, out var apiKey))
         {
             throw new AbpException("Postmark API key is not set or not in the correct format!");
         }
-        var client = new PostmarkClient(apiKey.ToString());
+        _client ??= new AbpPostmarkClient(apiKey.ToString());
 
         try
         {
-            return client;
+            return _client;
         }
         catch
         {
