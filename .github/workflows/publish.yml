@@ -42,14 +42,8 @@ jobs:
       with:
         setAllVars: true
 
-    - name: Get Version Number
-      id: get_version
-      run: |
-        $version = dotnet nbgv get-version -v Simple
-        echo "::set-output name=version::$version"
-
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:PackageVersion=${{ steps.get_version.outputs.version }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:ContinuousIntegrationBuild=true
+    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:PackageVersion=${{ steps.nbgv.outputs.NuGetPackageVersion }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
   
     # Step to prepare the artifacts by copying *.nupkg and *.snpkg files to a temporary directory
     - name: Prepare Artifacts
