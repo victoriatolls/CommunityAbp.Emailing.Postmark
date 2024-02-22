@@ -31,19 +31,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
 
     # Install the .NET SDK indicated in the global.json file
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
-
-    - name: ⚙️ Setup GIT versioning
-      uses: dotnet/nbgv@master
-      env: 
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      id: nbgv
-      with:
-        setAllVars: true
 
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
     - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
@@ -93,8 +85,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
     - name: Run tests
