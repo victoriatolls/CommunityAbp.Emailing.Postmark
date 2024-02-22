@@ -73,3 +73,7 @@ await _emailSender.SendAsync("your_cool_address@someprovider.com", null, null, a
 ```
 
 **Note**: I'm not setting a subject or body, that's because the template has those things defined so they just get ignored here.
+
+## Useful
+
+Here's something useful for SMTP testing: [Papercut](https://github.com/ChangemakerStudios/Papercut-SMTP)
