@@ -25,9 +25,6 @@ defaults:
 jobs:
   create_nuget:
     runs-on: ubuntu-latest
-    outputs:
-      semVer2: ${{ steps.nbgv.outputs.SemVer2 }}
-      isPreviewRelease: ${{ startsWith(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'preview') }}
     steps:
     - uses: actions/checkout@v3
       with:
