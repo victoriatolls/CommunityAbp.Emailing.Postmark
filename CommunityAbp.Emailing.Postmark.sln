@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityAbp.Emailing.Postmark.Tests", "test\CommunityAbp.Emailing.Postmark.Tests\CommunityAbp.Emailing.Postmark.Tests.csproj", "{00E23532-AAD6-4659-9414-1E9EE27636AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityAbp.Emailing.Postmark.TestBase", "test\CommunityAbp.Emailing.Postmark.TestBase\CommunityAbp.Emailing.Postmark.TestBase.csproj", "{0F489B2A-3166-4EE2-A7FF-FC9F33315B7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +27,14 @@ Global
 		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E23532-AAD6-4659-9414-1E9EE27636AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E23532-AAD6-4659-9414-1E9EE27636AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E23532-AAD6-4659-9414-1E9EE27636AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E23532-AAD6-4659-9414-1E9EE27636AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F489B2A-3166-4EE2-A7FF-FC9F33315B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F489B2A-3166-4EE2-A7FF-FC9F33315B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F489B2A-3166-4EE2-A7FF-FC9F33315B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F489B2A-3166-4EE2-A7FF-FC9F33315B7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
