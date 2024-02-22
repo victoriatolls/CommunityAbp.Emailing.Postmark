@@ -5,9 +5,9 @@ using PostmarkDotNet;
 using Shouldly;
 using Volo.Abp;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.Data;
 using Volo.Abp.Emailing;
 using Volo.Abp.Emailing.Smtp;
-using Volo.Abp.Settings;
 
 namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
 {
@@ -83,7 +83,8 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
             PostmarkMessage? sentMessage = null;
 
             var postmarkClientMock = Substitute.For<IAbpPostmarkClient>();
-            postmarkClientMock.When(x => x.SendMessageAsync(Arg.Any<PostmarkMessage>())).Do(x => {
+            postmarkClientMock.When(x => x.SendMessageAsync(Arg.Any<PostmarkMessage>())).Do(x =>
+            {
                 sentMessage = x.Arg<PostmarkMessage>();
             });
 
@@ -103,21 +104,74 @@ namespace CommunityAbp.Emailing.Postmark.Tests.Emailing
         }
 
         [Fact]
-        public Task SendAsync_WithBackupEnabled_UsesBackupSender()
+        public async Task SendAsync_WithBackupEnabled_UsesBackupSender()
         {
-            // Setup
-            // Act
-            // Assert
-            return Task.CompletedTask;
+            // Arrange
+            _abpPostmarkConfiguration.Value.Returns(new AbpPostmarkOptions
+            {
+                UsePostmark = false
+            });
+            _smtpConfiguration.GetDefaultFromAddressAsync().Returns("test@test.com");
+            _smtpConfiguration.GetHostAsync().Returns("127.0.0.1");
+
+            var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
+
+            var email = "test@example.com";
+            var subject = "Test Subject";
+            var body = "Test Body";
+
+            await postmarkSender.SendAsync(email, subject, body);
         }
 
         [Fact]
-        public Task SendTemplatedEmailAsync_WithValidTemplate_SendsEmail()
+        public async Task SendTemplatedEmailAsync_WithValidTemplate_SendsEmail()
         {
-            // Setup
+            var templateModel = new Dictionary<string, object?>
+            {
+                { "something", "something_Value" }
+            };
+            var prop = new Dictionary<string, object?>
+            {
+                { AbpPostmarkConsts.PostmarkTemplateId, 12345678L },
+                { AbpPostmarkConsts.TemplateModel, templateModel }
+            };
+
+            _abpPostmarkConfiguration.Value.Returns(new AbpPostmarkOptions
+            {
+                ApiKey = "221d43f5-60c7-4426-96b9-c05508b1aaa0",
+                UsePostmark = true
+            });
+            _smtpConfiguration.GetDefaultFromAddressAsync().Returns("test@test.com");
+
+            var email = "test@example.com";
+            TemplatedPostmarkMessage? sentMessage = null;
+
+            var postmarkClientMock = Substitute.For<IAbpPostmarkClient>();
+            postmarkClientMock.When(x => x.SendEmailWithTemplateAsync(Arg.Any<TemplatedPostmarkMessage>())).Do(x =>
+            {
+                sentMessage = x.Arg<TemplatedPostmarkMessage>();
+            });
+
+            var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+
             // Act
+            await postmarkSender.SendAsync(email, null, null, additionalEmailSendingArgs: new AdditionalEmailSendingArgs() { ExtraProperties = new ExtraPropertyDictionary(prop) });
+
             // Assert
-            return Task.CompletedTask;
+            sentMessage.ShouldNotBeNull();
+            sentMessage.ShouldSatisfyAllConditions(
+                x => x.To.ShouldBe(email),
+                x => x.TrackOpens.ShouldBe(true),
+                x => x.TemplateId.ShouldNotBeNull(),
+                x => x.TemplateId.ShouldBe(12345678L),
+                x => x.TemplateModel.ShouldNotBeNull(),
+                x => x.TemplateModel.ShouldBeOfType<Dictionary<string, object?>>()
+            );
+            if (sentMessage.TemplateModel is Dictionary<string, object?> sentModel)
+            {
+                sentModel.ShouldContainKey("something");
+                sentModel["something"].ShouldBe("something_Value");
+            }
         }
 
         [Fact]

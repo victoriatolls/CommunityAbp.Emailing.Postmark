@@ -13,7 +13,18 @@ Then, into your abp Domain project, add the following code to your module class:
 [DependsOn(typeof(AbpPostmarkModule))]
 public class YourProjectDomainModule : AbpModule
 {
-	//...
+    // ..
+
+	public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        // Setup postmark
+        var configuration = context.Services.GetConfiguration();
+        Configure<AbpPostmarkOptions>(options =>
+        {
+            options.UsePostmark = configuration.GetValue("Postmark:Enabled", false);
+            options.ApiKey = configuration.GetValue("Postmark:ApiKey", string.Empty);
+        });
+    }
 }
 ```
 
@@ -60,3 +71,5 @@ var prop = new Dictionary<string, object?> {
   };
 await _emailSender.SendAsync("your_cool_address@someprovider.com", null, null, additionalEmailSendingArgs: new AdditionalEmailSendingArgs() { ExtraProperties = new ExtraPropertyDictionary(prop) });
 ```
+
+**Note**: I'm not setting a subject or body, that's because the template has those things defined so they just get ignored here.
