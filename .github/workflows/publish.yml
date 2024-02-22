@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+﻿# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
 name: publish
 on:
@@ -28,14 +28,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
     # Install the .NET SDK indicated in the global.json file
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
 
+    - name: ⚙️ Setup GIT versioning
+      uses: dotnet/nbgv@master
+      env: 
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      id: nbgv
+      with:
+        setAllVars: true
+
     # Create the NuGet package in the folder from the environment variable NuGetDirectory
-    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }}
+    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }} -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=${{env.NBGV_SemVer1}}
 
     # Publish the NuGet package as an artifact, so they can be used in the following jobs
     - uses: actions/upload-artifact@v3
