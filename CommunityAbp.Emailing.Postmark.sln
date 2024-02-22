@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34616.47
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityAbp.Emailing.Postmark", "src\CommunityAbp.Emailing.Postmark\CommunityAbp.Emailing.Postmark.csproj", "{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EF53E8DE-21B7-448C-B9BA-E04B30C4DBC0}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		common.props = common.props
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A06BD70-F140-46F7-B393-BBAF3DDE5DCA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CA78984C-6C50-4D00-A3E9-7427F6D24C24}
+	EndGlobalSection
+EndGlobal
