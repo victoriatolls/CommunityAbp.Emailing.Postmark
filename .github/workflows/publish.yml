@@ -50,7 +50,7 @@ jobs:
       run: |
         mkdir -p ${{ env.NuGetDirectory }}/artifacts
         cp ${{ env.NuGetDirectory }}/*.nupkg ${{ env.NuGetDirectory }}/artifacts
-        cp ${{ env.NuGetDirectory }}/*.snpkg ${{ env.NuGetDirectory }}/artifacts
+        cp ${{ env.NuGetDirectory }}/*.snupkg ${{ env.NuGetDirectory }}/artifacts
 
     # Publish the NuGet package as an artifact, so they can be used in the following jobs
     - uses: actions/upload-artifact@v3
@@ -60,7 +60,7 @@ jobs:
         retention-days: 7
         path: |
           ${{ env.NuGetDirectory }}/artifacts/*.nupkg
-          ${{ env.NuGetDirectory }}/artifacts/*.snpkg
+          ${{ env.NuGetDirectory }}/artifacts/*.snupkg
 
   validate_nuget:
     runs-on: ubuntu-latest
