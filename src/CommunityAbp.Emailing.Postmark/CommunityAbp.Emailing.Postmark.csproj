@@ -4,6 +4,7 @@
 		<TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
+		<EnablePackageValidation>true</EnablePackageValidation>
 		<WarningsAsErrors>Nullable</WarningsAsErrors>
 		<AssemblyName>CommunityAbp.Emailing.Postmark</AssemblyName>
 		<PackageId>CommunityAbp.Emailing.Postmark</PackageId>
@@ -20,6 +21,10 @@
 		<!-- Include symbol files (*.pdb) in the built .nupkg -->
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<RootNamespace />
+		<Company>Clinical Support Systems</Company>
+		<Authors>kfrancis</Authors>
+		<Description>Postmark is a cross-platform, popular open source mail client library for .net. This abp module provides an integration package to use the Postmark as the email sender.
+</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
