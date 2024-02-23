@@ -103,7 +103,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
         );
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - runs selectively")]
     public async Task SendAsync_WithBackupEnabled_UsesBackupSender()
     {
         // Arrange
