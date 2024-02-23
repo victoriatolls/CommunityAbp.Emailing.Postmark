@@ -1,5 +1,5 @@
 # CommunityAbp.Emailing.Postmark
-Postmark is a cross-platform, popular open source mail client library for .net. This abp module provides an integration package to use the Postmark as the email sender.
+Postmark is an email delivery service that developers and product teams actually like. Send transactional and marketing emails and get them to the inbox, every time.. This ABP module provides an integration package to use the Postmark as the email sender, even allowing the use of advanced features like templated emails without much fuss.
 
 ## Getting Started
 
