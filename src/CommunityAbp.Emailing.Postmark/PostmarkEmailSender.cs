@@ -83,7 +83,7 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
         var mailMessage = BuildMailMessage(null, to, subject, body, isBodyHtml, additionalEmailSendingArgs);
 
         // Check if we are sending a templated email
-        if (additionalEmailSendingArgs?.ExtraProperties?.ContainsKey(AbpPostmarkConsts.PostmarkTemplateId) == true)
+        if (additionalEmailSendingArgs?.ExtraProperties?.ContainsKey(AbpPostmarkConsts.PostmarkTemplateId) == true && (AbpPostmarkOptions.UsePostmark ?? false))
         {
             // Safely attempt to retrieve and unbox the PostmarkTemplateId
             var postmarkTemplateIdObj = additionalEmailSendingArgs?.ExtraProperties?.GetOrDefault(AbpPostmarkConsts.PostmarkTemplateId);
