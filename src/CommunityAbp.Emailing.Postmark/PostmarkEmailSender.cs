@@ -1,17 +1,18 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using PostmarkDotNet;
+using PostmarkDotNet.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using PostmarkDotNet;
-using PostmarkDotNet.Model;
 using Volo.Abp;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Emailing;
 using Volo.Abp.Emailing.Smtp;
+using Volo.Abp.MultiTenancy;
 
 namespace CommunityAbp.Emailing.Postmark;
 
@@ -28,18 +29,31 @@ public interface IPostmarkSmtpEmailSender : IEmailSender
 /// <remarks>
 /// Constructor
 /// </remarks>
-/// <param name="smtpConfiguration"></param>
-/// <param name="backgroundJobManager"></param>
-/// <param name="abpPostmarkConfiguration"></param>
-/// <param name="client"></param>
+/// <param name="currentTenant">
+/// The current tenant
+/// </param>
+/// <param name="smtpConfiguration">
+/// The SMTP configuration
+/// </param>
+/// <param name="backgroundJobManager">
+/// The background job manager
+/// </param>
+/// <param name="abpPostmarkConfiguration">
+/// The Postmark configuration
+/// </param>
+/// <param name="client">
+/// The Postmark client
+/// </param>
 [Dependency(ServiceLifetime.Transient, ReplaceServices = true)]
-public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration, IBackgroundJobManager backgroundJobManager, IOptions<AbpPostmarkOptions> abpPostmarkConfiguration, IAbpPostmarkClient? client = null) : EmailSenderBase(smtpConfiguration, backgroundJobManager), IPostmarkSmtpEmailSender
+public class PostmarkEmailSender(ICurrentTenant currentTenant, ISmtpEmailSenderConfiguration smtpConfiguration, IBackgroundJobManager backgroundJobManager, IOptions<AbpPostmarkOptions> abpPostmarkConfiguration, IAbpPostmarkClient? client = null) : EmailSenderBase(currentTenant, smtpConfiguration, backgroundJobManager), IPostmarkSmtpEmailSender
 {
     /// <summary>
     /// You can also send to postmark using Smtp, so if the user has not configured Postmark, we can use the SmtpEmailSender as a backup
     /// but that'll also work if postmark is not enabled in the options.
     /// </summary>
-    private readonly SmtpEmailSender _backupSender = new(smtpConfiguration, backgroundJobManager);
+    private readonly SmtpEmailSender _backupSender = new(currentTenant, smtpConfiguration, backgroundJobManager);
+
+    private IAbpPostmarkClient? _client = client;
 
     /// <summary>
     /// Postmark options
@@ -50,8 +64,6 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
     /// Default SMTP configuration, used for backup
     /// </summary>
     protected ISmtpEmailSenderConfiguration SmtpConfiguration { get; } = smtpConfiguration;
-
-    private IAbpPostmarkClient? _client = client;
 
     /// <summary>
     /// Construct a Postmark client
@@ -67,14 +79,7 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
         }
         _client ??= new AbpPostmarkClient(apiKey.ToString());
 
-        try
-        {
-            return _client;
-        }
-        catch
-        {
-            throw;
-        }
+        return _client;
     }
 
     /// <inheritdoc />
@@ -86,11 +91,11 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
         if (additionalEmailSendingArgs?.ExtraProperties?.ContainsKey(AbpPostmarkConsts.PostmarkTemplateId) == true && (AbpPostmarkOptions.UsePostmark ?? false))
         {
             // Safely attempt to retrieve and unbox the PostmarkTemplateId
-            var postmarkTemplateIdObj = additionalEmailSendingArgs?.ExtraProperties?.GetOrDefault(AbpPostmarkConsts.PostmarkTemplateId);
+            var postmarkTemplateIdObj = additionalEmailSendingArgs.ExtraProperties?.GetOrDefault(AbpPostmarkConsts.PostmarkTemplateId);
             var postmarkTemplateId = postmarkTemplateIdObj is long v ? v : default; // Use default(long) or a specific default value
 
             // Safely attempt to retrieve and cast the TemplateModel
-            var templateModelObj = additionalEmailSendingArgs?.ExtraProperties?.GetOrDefault(AbpPostmarkConsts.TemplateModel);
+            var templateModelObj = additionalEmailSendingArgs.ExtraProperties?.GetOrDefault(AbpPostmarkConsts.TemplateModel);
             var templateModel = templateModelObj as Dictionary<string, object> ?? [];
 
             if (postmarkTemplateId != default)
@@ -109,32 +114,6 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
         }
     }
 
-    private async Task SendTemplatedEmailAsync(MailMessage mail, long postmarkTemplateId, Dictionary<string, object> templateModel)
-    {
-        var client = await BuildClientAsync();
-        var mailMessage = await ConvertToPostmarkMessage(mail);
-
-        // Now, instead of setting the body, we'll use the template fields
-        var templatedMessage = new TemplatedPostmarkMessage
-        {
-            From = mailMessage.From,
-            To = mailMessage.To,
-            Cc = mailMessage.Cc,
-            Bcc = mailMessage.Bcc,
-            TemplateId = postmarkTemplateId,
-            TemplateModel = templateModel,
-            Headers = mailMessage.Headers,
-            Attachments = mailMessage.Attachments,
-            ReplyTo = mailMessage.ReplyTo,
-            Tag = mailMessage.Tag,
-            TrackOpens = mailMessage.TrackOpens,
-            TrackLinks = mailMessage.TrackLinks,
-            MessageStream = mailMessage.MessageStream
-        };
-
-        await client.SendEmailWithTemplateAsync(templatedMessage);
-    }
-
     /// <summary>
     /// Send the email
     /// </summary>
@@ -147,9 +126,9 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
             return;
         }
 
-        var client = await BuildClientAsync();
+        var c = await BuildClientAsync();
         var mailMessage = await ConvertToPostmarkMessage(mail);
-        await client.SendMessageAsync(mailMessage);
+        await c.SendMessageAsync(mailMessage);
     }
 
     private async Task<PostmarkMessage> ConvertToPostmarkMessage(MailMessage mail)
@@ -189,5 +168,31 @@ public class PostmarkEmailSender(ISmtpEmailSenderConfiguration smtpConfiguration
         }
 
         return mailMessage;
+    }
+
+    private async Task SendTemplatedEmailAsync(MailMessage mail, long postmarkTemplateId, Dictionary<string, object> templateModel)
+    {
+        var c = await BuildClientAsync();
+        var mailMessage = await ConvertToPostmarkMessage(mail);
+
+        // Now, instead of setting the body, we'll use the template fields
+        var templatedMessage = new TemplatedPostmarkMessage
+        {
+            From = mailMessage.From,
+            To = mailMessage.To,
+            Cc = mailMessage.Cc,
+            Bcc = mailMessage.Bcc,
+            TemplateId = postmarkTemplateId,
+            TemplateModel = templateModel,
+            Headers = mailMessage.Headers,
+            Attachments = mailMessage.Attachments,
+            ReplyTo = mailMessage.ReplyTo,
+            Tag = mailMessage.Tag,
+            TrackOpens = mailMessage.TrackOpens,
+            TrackLinks = mailMessage.TrackLinks,
+            MessageStream = mailMessage.MessageStream
+        };
+
+        await c.SendEmailWithTemplateAsync(templatedMessage);
     }
 }
