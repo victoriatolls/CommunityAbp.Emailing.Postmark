@@ -206,7 +206,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
             sentMessage = x.Arg<TemplatedPostmarkMessage>();
         });
 
-        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+        var postmarkSender = new PostmarkEmailSender(_currentTenant, _smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
 
         // Act
         await postmarkSender.SendAsync(email, null, null, additionalEmailSendingArgs: new AdditionalEmailSendingArgs() { ExtraProperties = new ExtraPropertyDictionary(prop) });
