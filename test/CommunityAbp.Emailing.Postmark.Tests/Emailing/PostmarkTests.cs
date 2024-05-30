@@ -8,6 +8,7 @@ using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Data;
 using Volo.Abp.Emailing;
 using Volo.Abp.Emailing.Smtp;
+using Volo.Abp.MultiTenancy;
 
 namespace CommunityAbp.Emailing.Postmark.Tests.Emailing;
 
@@ -17,6 +18,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
     private ISmtpEmailSenderConfiguration _smtpConfiguration;
     private IBackgroundJobManager _backgroundJobManager;
     private IOptions<AbpPostmarkOptions> _abpPostmarkConfiguration;
+    private ICurrentTenant _currentTenant;
 
     /// <summary>
     /// Constructor
@@ -33,6 +35,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
         _smtpConfiguration = Substitute.For<ISmtpEmailSenderConfiguration>();
         _backgroundJobManager = Substitute.For<IBackgroundJobManager>();
         _abpPostmarkConfiguration = Substitute.For<IOptions<AbpPostmarkOptions>>();
+        _currentTenant = Substitute.For<ICurrentTenant>();
     }
 
     [Fact]
@@ -55,7 +58,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
             UsePostmark = true // Assuming the intention is to use Postmark
         });
 
-        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
+        var postmarkSender = new PostmarkEmailSender(_currentTenant, _smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
 
         // Act
         var exception = await Should.ThrowAsync<AbpException>(postmarkSender.BuildClientAsync);
@@ -88,7 +91,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
             sentMessage = x.Arg<PostmarkMessage>();
         });
 
-        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+        var postmarkSender = new PostmarkEmailSender(_currentTenant, _smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
 
         // Act
         await postmarkSender.SendAsync(email, subject, body, isBodyHtml);
@@ -114,7 +117,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
         _smtpConfiguration.GetDefaultFromAddressAsync().Returns("test@test.com");
         _smtpConfiguration.GetHostAsync().Returns("127.0.0.1");
 
-        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
+        var postmarkSender = new PostmarkEmailSender(_currentTenant, _smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration);
 
         var email = "test@example.com";
         var subject = "Test Subject";
@@ -152,7 +155,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
             sentMessage = x.Arg<TemplatedPostmarkMessage>();
         });
 
-        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+        var postmarkSender = new PostmarkEmailSender(_currentTenant, _smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
 
         // Act
         await postmarkSender.SendAsync(email, null, null, additionalEmailSendingArgs: new AdditionalEmailSendingArgs() { ExtraProperties = new ExtraPropertyDictionary(prop) });
