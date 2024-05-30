@@ -13,6 +13,11 @@ public static class AbpPostmarkConsts
     public const string PostmarkTemplateId = "PostmarkTemplateId";
 
     /// <summary>
+    /// When sending a templated email, you can specify a alias for the template to use for the email.
+    /// </summary>
+    public const string PostmarkAlias = "PostmarkAlias";
+
+    /// <summary>
     /// When sending a templated email, you can specify a model to use for the template.
     /// </summary>
     public const string TemplateModel = "TemplateModel";

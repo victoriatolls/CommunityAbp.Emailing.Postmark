@@ -124,7 +124,7 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
     }
 
     [Fact]
-    public async Task SendTemplatedEmailAsync_WithValidTemplate_SendsEmail()
+    public async Task SendTemplatedEmailAsync_WithValidTemplateId_SendsEmail()
     {
         var templateModel = new Dictionary<string, object?>
         {
@@ -173,6 +173,58 @@ public class PostmarkTests : AbpPostmarkEmailingTestBase
             sentModel["something"].ShouldBe("something_Value");
         }
     }
+
+    [Fact]
+    public async Task SendTemplatedEmailAsync_WithValidTemplateAlias_SendsEmail()
+    {
+        var templateModel = new Dictionary<string, object?>
+        {
+            { "something", "something_Value" }
+        };
+        var prop = new Dictionary<string, object?>
+        {
+            { AbpPostmarkConsts.PostmarkAlias, "test-email" },
+            { AbpPostmarkConsts.TemplateModel, templateModel }
+        };
+
+        _abpPostmarkConfiguration.Value.Returns(new AbpPostmarkOptions
+        {
+            ApiKey = "221d43f5-60c7-4426-96b9-c05508b1aaa0",
+            UsePostmark = true
+        });
+        _smtpConfiguration.GetDefaultFromAddressAsync().Returns("test@test.com");
+
+        var email = "test@example.com";
+        TemplatedPostmarkMessage? sentMessage = null;
+
+        var postmarkClientMock = Substitute.For<IAbpPostmarkClient>();
+        postmarkClientMock.When(x => x.SendEmailWithTemplateAsync(Arg.Any<TemplatedPostmarkMessage>())).Do(x =>
+        {
+            sentMessage = x.Arg<TemplatedPostmarkMessage>();
+        });
+
+        var postmarkSender = new PostmarkEmailSender(_smtpConfiguration, _backgroundJobManager, _abpPostmarkConfiguration, postmarkClientMock);
+
+        // Act
+        await postmarkSender.SendAsync(email, null, null, additionalEmailSendingArgs: new AdditionalEmailSendingArgs() { ExtraProperties = new ExtraPropertyDictionary(prop) });
+
+        // Assert
+        sentMessage.ShouldNotBeNull();
+        sentMessage.ShouldSatisfyAllConditions(
+            x => x.To.ShouldBe(email),
+            x => x.TrackOpens.ShouldBe(true),
+            x => x.TemplateAlias.ShouldNotBeNull(),
+            x => x.TemplateAlias.ShouldBe("test-email"),
+            x => x.TemplateModel.ShouldNotBeNull(),
+            x => x.TemplateModel.ShouldBeOfType<Dictionary<string, object?>>()
+        );
+        if (sentMessage.TemplateModel is Dictionary<string, object?> sentModel)
+        {
+            sentModel.ShouldContainKey("something");
+            sentModel["something"].ShouldBe("something_Value");
+        }
+    }
+
 
     [Fact]
     public Task SendTemplatedEmailAsync_WithInvalidTemplate_ThrowsError()
